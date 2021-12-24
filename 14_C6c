@@ -1,0 +1,217 @@
+/*
+
+  Write OpenGL program to draw Sun Rise and Sunset
+  
+*/
+
+#include<iostream>
+#include<stdlib.h>
+
+#ifdef __APPLE__
+#include<openGL/openGL.h>
+#include<GLUT/glut.h>
+#else 
+#include<GL/glut.h>
+#endif
+
+using namespace std;
+
+float ballX = -0.8f; // constant 0.5 declares a double in Objective-C, putting an f on the end - 0.5f declares the constant as a (32-bit) float.
+float ballY = -0.3f;
+float ballZ = -1.2f;
+float colR=3.0;
+float colG=1.5;
+float colB=1.0;
+float bgColR=0.0;
+float bgColG=0.0;
+float bgColB=0.0;
+
+static int flag=1;
+
+void drawBall(void) {
+
+        glColor3f(colR,colG,colB); //set ball colour
+        glTranslatef(ballX,ballY,ballZ); //moving it toward the screen a bit on creation
+        glutSolidSphere (0.05, 30, 30); //create ball.
+
+}
+
+void drawAv(void) {
+
+        glBegin(GL_POLYGON); // glBegin ? delimit the vertices of a primitive or a group of like primitives
+        
+        glColor3f(1.0,1.0,1.0);
+   
+        glVertex3f(-0.9,-0.7,-1.0);
+
+        glVertex3f(-0.5,-0.1,-1.0);
+
+        glVertex3f(-0.2,-1.0,-1.0);
+
+        glVertex3f(0.5,0.0,-1.0);
+
+        glVertex3f(0.6,-0.2,-1.0);
+
+        glVertex3f(0.9,-0.7,-1.0);
+
+    glEnd();
+
+}
+
+void drawClouds(){}
+void keyPress(int key, int x, int y)
+{
+      if(key==GLUT_KEY_RIGHT)
+        ballX -= 0.05f;
+    if(key==GLUT_KEY_LEFT)
+        ballX  += 0.05f;
+
+    glutPostRedisplay(); // glutPostRedisplay marks the current window as needing to be redisplayed.
+}
+
+void initRendering() {
+    glEnable(GL_DEPTH_TEST); // If enabled, do depth comparisons and update the depth buffer.
+    glEnable(GL_COLOR_MATERIAL);  //  cause a material color to track the current color 
+    glEnable(GL_LIGHTING); //Enable lighting
+    glEnable(GL_LIGHT0); //Enable light #0
+    glEnable(GL_LIGHT1); //Enable light #1
+    glEnable(GL_NORMALIZE); //Automatically normalize normals
+    //glShadeModel(GL_SMOOTH); //Enable smooth shading
+}
+
+//Called when the window is resized
+void handleResize(int w, int h) {
+    //Tell OpenGL how to convert from coordinates to pixel values
+    glViewport(0, 0, w, h);// glViewport specifies the affine transformation of x and y from normalized device coordinates to window coordinates
+    
+    glMatrixMode(GL_PROJECTION); //Switch to setting the camera perspective
+    
+    //Set the camera perspective
+    glLoadIdentity(); //Reset the camera
+    gluPerspective(45.0,                  //The camera angle
+                   (double)w / (double)h, //The width-to-height ratio
+                   1.0,                   //The near z clipping coordinate
+                   200.0);                //The far z clipping coordinate
+}
+
+void drawScene()
+{
+    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT); //  glClear clears buffers to preset values
+    glClearColor(bgColR,bgColG,bgColB,0.0); //glClearColor specify clear values for the color buffers and Specify the red, green, blue, and alpha values used when the color buffers are cleared. The initial values are all 0.
+    glMatrixMode(GL_MODELVIEW); // glMatrixMode specify which matrix is the current matrix
+   
+    glLoadIdentity(); // replace the current matrix with the identity matrix
+   
+    //Add ambient light
+    GLfloat ambientColor[] = {0.2f, 0.2f, 0.2f, 1.0f}; //Color (0.2, 0.2, 0.2)
+    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambientColor); // glLightModelfv set the lighting model parameters
+   
+    //Add positioned light
+    GLfloat lightColor0[] = {0.5f, 0.5f, 0.5f, 1.0f}; //Color (0.5, 0.5, 0.5)
+    GLfloat lightPos0[] = {4.0f, 0.0f, 8.0f, 1.0f}; //Positioned at (4, 0, 8)
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, lightColor0);  // glLightfv set light source parameters
+    glLightfv(GL_LIGHT0, GL_POSITION, lightPos0); 
+   
+    //Add directed light
+    GLfloat lightColor1[] = {0.5f, 0.2f, 0.2f, 1.0f}; //Color (0.5, 0.2, 0.2)
+    //Coming from the direction (-1, 0.5, 0.5)
+    GLfloat lightPos1[] = {-1.0f, 0.5f, 0.5f, 0.0f};
+    glLightfv(GL_LIGHT1, GL_DIFFUSE, lightColor1);
+    glLightfv(GL_LIGHT1, GL_POSITION, lightPos1);
+
+    //drawing the SUN
+    glPushMatrix(); // push and pop the current matrix stack
+        drawBall();
+    glPopMatrix(); // pops the current matrix stack, replacing the current matrix with the one below it on the stack.
+    //drawing the Mount Avarest
+    glPushMatrix();
+        drawAv();
+    glPopMatrix();
+
+    //drawing the Clouds
+    glPushMatrix();
+        drawClouds();
+    glPopMatrix();
+
+    glutSwapBuffers(); // glutSwapBuffers swaps the buffers of the current window if double buffered.
+}
+
+//float _angle = 30.0f;
+void update(int value) {
+   
+    if(ballX>0.9f)
+    {
+        ballX = -0.8f;
+        ballY = -0.3f;
+        flag=1;
+        colR=2.0;
+        colG=1.50;
+        colB=1.0;
+
+        bgColB=0.0;
+    }
+   
+    if(flag)
+    {
+    ballX += 0.001f;
+    ballY +=0.0007f;
+    colR-=0.001;
+    //colG+=0.002;
+    colB+=0.005;
+
+    bgColB+=0.001;
+
+       if(ballX>0.01)
+       {
+           flag=0;
+
+       }
+    }
+    if (!flag)
+    {
+        ballX += 0.001f;
+        ballY -=0.0007f;
+        colR+=0.001;
+        colB-=0.01;
+
+        bgColB-=0.001;
+
+        if(ballX<-0.3)
+       {
+           flag=1;
+
+       }
+    }
+   
+    glutPostRedisplay(); //Tell GLUT that the display has changed
+   
+    //Tell GLUT to call update again in 25 milliseconds
+    glutTimerFunc(25, update, 0);
+}
+
+int main(int argc,char** argv)
+{
+    glutInit(&argc,argv); //glutInit used to initialize the GLUT library
+   
+    glutInitDisplayMode(GLUT_DOUBLE|GLUT_RGB|GLUT_DEPTH); // glutInitDisplayMode sets the initial display mode.
+   
+    glutInitWindowSize(400,400); //  glutInitWindowSize set the initial window size with height and width
+   
+    glutCreateWindow("Sun"); // glutCreateWindow creates a top-level window
+   
+    initRendering(); // 
+   
+    glutDisplayFunc(drawScene); //  glutDisplayFunc sets the display callback for the current window and DrawScene() is the new display callback function.
+ 
+    glutFullScreen(); // glutFullScreen requests that the current window be made full screen
+   
+    glutSpecialFunc(keyPress); //  glutSpecialFunc sets the special keyboard callback for the current window and keyPress() is new entry callback function.
+    
+    glutReshapeFunc(handleResize); // glutReshapeFunc sets the reshape callback for the current window and handleResize() is new reshape callback function.
+
+    glutTimerFunc(25, update, 0); // glutTimerFunc registers a timer callback to be triggered in a specified number of milliseconds and calls update function.
+
+    glutMainLoop(); // glutMainLoop enters the GLUT event processing loop.
+   
+    return(0);
+}
