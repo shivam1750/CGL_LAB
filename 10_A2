@@ -1,0 +1,172 @@
+/*
+
+Write C++ program to implement Cohen Southerland line clipping algorithm
+
+*/
+
+#include <iostream>
+#include <graphics.h>
+#include <stdlib.h>
+#define LEFT 1
+#define RIGHT 2
+#define BOTTOM 4
+#define TOP 8
+using namespace std;
+
+int wx_max,wx_min,wy_min,wy_max;
+void initialize()
+{
+	int gd,gm;
+	gd=DETECT;
+	initgraph(&gd,&gm,NULL);
+	cleardevice();
+}
+int regionCode(int x,int y)
+{
+	int ret = 0;
+	if(x < wx_min) 
+	{
+		ret |= LEFT;
+		cout<<"\nret11="<<ret;
+	}
+	else
+		if(x > wx_max)
+		{ 
+			ret |= RIGHT;
+			cout<<"\nret22="<<ret;
+		}
+		if(y < wy_min) 
+		{
+			ret |= BOTTOM;
+			cout<<"\nret33="<<ret;
+		}
+		else
+			if(y > wy_max) 
+			{
+				ret |= TOP;
+				cout<<"\nret44="<<ret;
+			}
+	return ret;
+}
+int clipLine(int &x1,int &y1,int &x2,int &y2)
+{
+	cout<<"\nx1="<<x1;
+	cout<<"\ny1="<<y1;
+	cout<<"\nx2="<<x2;
+	cout<<"\ny2="<<y2;
+	int rcode1 = regionCode(x1,y1);
+	cout<<"\nrcode1="<<rcode1;
+	int rcode2 = regionCode(x2,y2);
+	cout<<"\nrcode2="<<rcode2;
+	int x,y;
+	float m = 0;
+	if(x2 != x1)
+	{
+		m = (float)(y2 - y1)/ (float)(x2 - x1);
+		cout<<"\nm="<<m;
+	}
+	x = y = 0;
+	while(1)
+	{
+		if(rcode1 == 0 && rcode2 == 0)
+		{
+			return 1;
+		}
+		else
+		if((rcode1 & rcode2) != 0)
+		{
+			return 0;
+		}
+		else
+		{
+			int outcode = (rcode1 == 0)? rcode2:rcode1;
+			cout<<"\noutcode="<<outcode;
+			if(outcode & TOP)
+			{
+				cout<<"\ninside if(outcode & TOP)";
+				if(m != 0)
+				{
+					x = x1 + (float)(1/m) * (float)(wy_max - y1);
+					cout<<"\nx="<<x;
+				}
+				else
+				{
+					x = x1;
+					cout<<"\nx=x1="<<x;
+				}
+				y = wy_max;
+				cout<<"\ny=wymax"<<y;
+			}
+			else
+			if(outcode & BOTTOM)
+			{
+				cout<<"\ninside if(outcode & BOTTOM)";
+				if(m != 0)
+				{
+					x = x1 + (float)(1/m) * (float)(wy_min - y1);
+					cout<<"\nx="<<x;
+				}
+				else
+				{
+					x = x1;
+					cout<<"\nx=x1="<<x;
+				}
+				y = wy_min;
+				cout<<"\ny=wymin"<<y;
+			}
+			if(outcode & LEFT)
+			{
+				cout<<"\ninside if(outcode & LEFT)";
+				x = wx_min;
+				cout<<"\nx=wxmin"<<x;
+				y = y1 + (float)(m) * (float)(wx_min - x1);
+				cout<<"\ny="<<y;
+			}
+			else
+			if(outcode & RIGHT)
+			{
+				cout<<"\ninside if(outcode & RIGHT)";
+				x = wx_max;
+				cout<<"\nx=wxax"<<x;
+				y = y1 + (float)(m) * (float)(wx_max - x1);
+				cout<<"\ny="<<y;
+			}
+			if(rcode1 == outcode)
+			{
+				x1 = x;
+				y1 = y;
+				rcode1 = regionCode(x1,y1);
+			}
+			else
+			{
+				x2 = x;
+				y2 = y;
+				rcode2 = regionCode(x2,y2);
+			}
+		}
+	}
+}
+int main()
+{
+
+	initialize();
+	int x1,y1,x2,y2;
+	cout<<"\nEnter Cor Of Line (x1,y1) (x2,y2) : ";
+	cin>>x1>>y1>>x2>>y2;
+	cout<<"\nEnter the co-or of the window(wx_min,wy_max,wx_max,wy_min):";
+	cin>>wx_min>>wy_max>>wx_max>>wy_min;
+
+	//initialize();
+	cout<<"\n\t\t\t\tBefore Clipping";
+	rectangle(wx_min,wy_max,wx_max,wy_min);
+	line(x1,y1,x2,y2);
+	getch();
+
+	cleardevice();
+	//initialize();
+	cout<<"\t\t\t\t\tAfter Clipping\n";
+	rectangle(wx_min,wy_max,wx_max,wy_min);
+	if(clipLine(x1,y1,x2,y2))
+	line(x1,y1,x2,y2);
+	getch();
+}
