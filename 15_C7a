@@ -1,0 +1,66 @@
+/*
+
+  Write a C++ program to control a ball using arrow keys. Apply the concept of
+  polymorphism.
+  
+*/
+
+#include <iostream>
+#include <graphics.h>
+
+// by using  function overloading in polymorphism 
+
+void Circle(int i, int j){
+	circle(i,j,30);
+}
+
+int Circle(int *ch){
+	*ch = getch();
+	return *ch;
+}
+
+int main(){
+    int  i=250, j =250, x=0, y=-1, ch, gd = DETECT,gm;
+    initgraph(&gd, &gm, NULL);
+    setcolor(WHITE);
+    
+    while(1) //infinite loop
+    { 
+    	Circle(i,j);    
+        if (kbhit()) //check if a key is pressed
+            {
+                Circle(&ch);
+                if(ch== 72) //move upward
+				{
+                    x=0;
+                    y--;
+                }
+				if(ch==75) //move left 
+                {
+                    x--;
+                    y=0;
+
+            	}       
+                if(ch==77) //move right
+                {
+                    x++;
+                    y=0;
+
+                }
+                if(ch==80) //move downward 
+                {
+                    x=0;
+                    y++;
+                }
+
+                if(ch==27) 
+                    exit(0);        
+                }
+        i = i + x;
+        j = j + y;
+
+        delay(30);
+        cleardevice();
+    }
+    return 0;
+}
